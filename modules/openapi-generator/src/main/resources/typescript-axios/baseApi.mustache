@@ -5,8 +5,8 @@
 import type { Configuration } from './configuration';
 // Some imports not used depending on template conditions
 // @ts-ignore
-import type { AxiosPromise, AxiosInstance, RawAxiosRequestConfig } from 'axios';
-import globalAxios from 'axios';
+import type { AxiosPromise, AxiosInstance, RawAxiosRequestConfig } from '{{#withArkTSImports}}@ohos/{{/withArkTSImports}}axios';
+import globalAxios from '{{#withArkTSImports}}@ohos/{{/withArkTSImports}}axios';
 
 export const BASE_PATH = "{{{basePath}}}".replace(/\/+$/, "");
 

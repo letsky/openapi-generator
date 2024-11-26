@@ -9,6 +9,9 @@ import { RequiredError } from "./base";
 {{#withNodeImports}}
 import { URL, URLSearchParams } from 'url';
 {{/withNodeImports}}
+{{#withArkTSImports}}
+import Url from '@ohos.url';
+{{/withArkTSImports}}
 
 /**
  *
@@ -76,7 +79,7 @@ export const setOAuthToObject = async function (object: any, name: string, scope
     }
 }
 
-function setFlattenedQueryParams(urlSearchParams: URLSearchParams, parameter: any, key: string = ""): void {
+function setFlattenedQueryParams(urlSearchParams: {{#withArkTSImports}}Url.{{/withArkTSImports}}URLSearchParams, parameter: any, key: string = ""): void {
     if (parameter == null) return;
     if (typeof parameter === "object") {
         if (Array.isArray(parameter)) {
@@ -89,11 +92,15 @@ function setFlattenedQueryParams(urlSearchParams: URLSearchParams, parameter: an
         }
     } 
     else {
+        let parameterStr = parameter;
+        {{#withArkTSImports}}
+        parameterStr = typeof parameter === 'number' ? parameter.toString() : parameter
+        {{/withArkTSImports}}
         if (urlSearchParams.has(key)) {
-            urlSearchParams.append(key, parameter);
+            urlSearchParams.append(key, parameterStr);
         } 
         else {
-            urlSearchParams.set(key, parameter);
+            urlSearchParams.set(key, parameterStr);
         }
     }
 }
@@ -102,8 +109,8 @@ function setFlattenedQueryParams(urlSearchParams: URLSearchParams, parameter: an
  *
  * @export
  */
-export const setSearchParams = function (url: URL, ...objects: any[]) {
-    const searchParams = new URLSearchParams(url.search);
+export const setSearchParams = function (url: {{#withArkTSImports}}Url.{{/withArkTSImports}}URL, ...objects: any[]) {
+    const searchParams = new {{#withArkTSImports}}Url.{{/withArkTSImports}}URLSearchParams(url.search);
     setFlattenedQueryParams(searchParams, objects);
     url.search = searchParams.toString();
 }
@@ -126,7 +133,7 @@ export const serializeDataIfNeeded = function (value: any, requestOptions: any, 
  *
  * @export
  */
-export const toPathString = function (url: URL) {
+export const toPathString = function (url: {{#withArkTSImports}}Url.{{/withArkTSImports}}URL) {
     return url.pathname + url.search + url.hash
 }
 

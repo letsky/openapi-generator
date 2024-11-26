@@ -4,8 +4,8 @@
 
 {{^withSeparateModelsAndApi}}
 import type { Configuration } from './configuration';
-import type { AxiosPromise, AxiosInstance, RawAxiosRequestConfig } from 'axios';
-import globalAxios from 'axios';
+import type { AxiosPromise, AxiosInstance, RawAxiosRequestConfig } from '{{#withArkTSImports}}@ohos/{{/withArkTSImports}}axios';
+import globalAxios from '{{#withArkTSImports}}@ohos/{{/withArkTSImports}}axios';
 {{#withNodeImports}}
 // URLSearchParams not necessarily used
 // @ts-ignore
@@ -14,6 +14,9 @@ import { URL, URLSearchParams } from 'url';
 import FormData from 'form-data'
 {{/multipartFormData}}
 {{/withNodeImports}}
+{{#withArkTSImports}}
+import Url from '@ohos.url';
+{{/withArkTSImports}}
 // Some imports not used depending on template conditions
 // @ts-ignore
 import { DUMMY_BASE_URL, assertParamExists, setApiKeyToObject, setBasicAuthToObject, setBearerAuthToObject, setOAuthToObject, setSearchParams, serializeDataIfNeeded, toPathString, createRequestFunction } from './common';

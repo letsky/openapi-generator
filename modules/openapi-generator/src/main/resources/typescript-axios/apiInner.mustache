@@ -4,8 +4,8 @@
 {{>licenseInfo}}
 
 import type { Configuration } from '{{apiRelativeToRoot}}configuration';
-import type { AxiosPromise, AxiosInstance, RawAxiosRequestConfig } from 'axios';
-import globalAxios from 'axios';
+import type { AxiosPromise, AxiosInstance, RawAxiosRequestConfig } from '{{#withArkTSImports}}@ohos/{{/withArkTSImports}}axios';
+import globalAxios from '{{#withArkTSImports}}@ohos/{{/withArkTSImports}}axios';
 {{#withNodeImports}}
 // URLSearchParams not necessarily used
 // @ts-ignore
@@ -14,6 +14,9 @@ import { URL, URLSearchParams } from 'url';
 import FormData from 'form-data'
 {{/multipartFormData}}
 {{/withNodeImports}}
+{{#withArkTSImports}}
+import Url from '@ohos.url';
+{{/withArkTSImports}}
 // Some imports not used depending on template conditions
 // @ts-ignore
 import { DUMMY_BASE_URL, assertParamExists, setApiKeyToObject, setBasicAuthToObject, setBearerAuthToObject, setOAuthToObject, setSearchParams, serializeDataIfNeeded, toPathString, createRequestFunction } from '{{apiRelativeToRoot}}common';
@@ -57,7 +60,7 @@ export const {{classname}}AxiosParamCreator = function (configuration?: Configur
             const localVarPath = `{{{path}}}`{{#pathParams}}
                 .replace(`{${"{{baseName}}"}}`, encodeURIComponent(String({{paramName}}))){{/pathParams}};
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            const localVarUrlObj = new {{#withArkTSImports}}Url.{{/withArkTSImports}}URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
             if (configuration) {
                 baseOptions = configuration.baseOptions;
