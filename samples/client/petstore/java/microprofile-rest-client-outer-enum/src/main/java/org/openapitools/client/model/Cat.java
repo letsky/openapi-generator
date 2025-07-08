@@ -14,6 +14,8 @@ package org.openapitools.client.model;
 
 import java.util.Objects;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.HashMap;
 import org.openapitools.client.model.Status;
 import java.lang.reflect.Type;
 import javax.json.bind.annotation.JsonbTypeDeserializer;
@@ -25,6 +27,7 @@ import javax.json.bind.serializer.SerializationContext;
 import javax.json.stream.JsonGenerator;
 import javax.json.stream.JsonParser;
 import javax.json.bind.annotation.JsonbProperty;
+import javax.json.bind.annotation.JsonbCreator;
 
 
 public class Cat  {
@@ -37,6 +40,7 @@ public class Cat  {
 
   @JsonbProperty("status")
   private Status status;
+
 
   /**
    * Get id

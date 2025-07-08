@@ -17,6 +17,20 @@
 
 package org.openapitools.codegen.languages;
 
+import com.samskivert.mustache.Mustache;
+import lombok.Getter;
+import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
+import org.openapitools.codegen.*;
+import org.openapitools.codegen.meta.features.*;
+import org.openapitools.codegen.model.ModelMap;
+import org.openapitools.codegen.model.ModelsMap;
+import org.openapitools.codegen.model.OperationMap;
+import org.openapitools.codegen.model.OperationsMap;
+import org.openapitools.codegen.utils.ProcessUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -50,6 +64,7 @@ import org.openapitools.codegen.model.ModelMap;
 import org.openapitools.codegen.model.ModelsMap;
 import org.openapitools.codegen.model.OperationMap;
 import org.openapitools.codegen.model.OperationsMap;
+import org.openapitools.codegen.templating.mustache.ReplaceAllLambda;
 import org.openapitools.codegen.utils.ProcessUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,6 +89,7 @@ public class KotlinClientCodegen extends AbstractKotlinCodegen {
 
     public static final String USE_RX_JAVA3 = "useRxJava3";
     public static final String USE_COROUTINES = "useCoroutines";
+    public static final String USE_NON_ASCII_HEADERS = "useNonAsciiHeaders";
     public static final String DO_NOT_USE_RX_AND_COROUTINES = "doNotUseRxAndCoroutines";
     public static final String GENERATE_ROOM_MODELS = "generateRoomModels";
     public static final String ROOM_MODEL_PACKAGE = "roomModelPackage";
@@ -82,6 +98,7 @@ public class KotlinClientCodegen extends AbstractKotlinCodegen {
     public static final String USE_SETTINGS_GRADLE = "useSettingsGradle";
     public static final String IDEA = "idea";
     public static final String USE_SPRING_BOOT3 = "useSpringBoot3";
+    public static final String USE_RESPONSE_AS_RETURN_TYPE = "useResponseAsReturnType";
 
     public static final String DATE_LIBRARY = "dateLibrary";
     public static final String REQUEST_DATE_CONVERTER = "requestDateConverter";
@@ -93,7 +110,7 @@ public class KotlinClientCodegen extends AbstractKotlinCodegen {
     public static final String EXPLICIT_API = "explicitApi";
     public static final String NULLABLE_RETURN_TYPE = "nullableReturnType";
 
-    public static final String SUPPORT_ANDROID_API_LEVEL_25_AND_BELLOW = "supportAndroidApiLevel25AndBelow";
+    public static final String SUPPORT_ANDROID_API_LEVEL_25_AND_BELOW = "supportAndroidApiLevel25AndBelow";
 
     public static final String MAP_FILE_BINARY_TO_BYTE_ARRAY = "mapFileBinaryToByteArray";
 
@@ -101,7 +118,7 @@ public class KotlinClientCodegen extends AbstractKotlinCodegen {
 
     protected static final String VENDOR_EXTENSION_BASE_NAME_LITERAL = "x-base-name-literal";
 
-    
+
     @Setter protected String dateLibrary = DateLibrary.JAVA8.value;
     @Setter protected String requestDateConverter = RequestDateConverter.TO_JSON.value;
     @Setter protected String collectionType = CollectionType.LIST.value;
@@ -264,7 +281,7 @@ public class KotlinClientCodegen extends AbstractKotlinCodegen {
         cliOptions.add(CliOption.newBoolean(OMIT_GRADLE_PLUGIN_VERSIONS, "Whether to declare Gradle plugin versions in build files."));
         cliOptions.add(CliOption.newBoolean(OMIT_GRADLE_WRAPPER, "Whether to omit Gradle wrapper for creating a sub project."));
         cliOptions.add(CliOption.newBoolean(USE_SETTINGS_GRADLE, "Whether the project uses settings.gradle."));
-        cliOptions.add(CliOption.newBoolean(IDEA, "Add IntellJ Idea plugin and mark Kotlin main and test folders as source folders."));
+        cliOptions.add(CliOption.newBoolean(IDEA, "Add IntelliJ Idea plugin and mark Kotlin main and test folders as source folders."));
 
         cliOptions.add(CliOption.newBoolean(MOSHI_CODE_GEN, "Whether to enable codegen with the Moshi library. Refer to the [official Moshi doc](https://github.com/square/moshi#codegen) for more info."));
         cliOptions.add(CliOption.newBoolean(FAIL_ON_UNKNOWN_PROPERTIES, "Fail Jackson de-serialization on unknown properties", false));
@@ -275,14 +292,17 @@ public class KotlinClientCodegen extends AbstractKotlinCodegen {
 
         cliOptions.add(CliOption.newBoolean(GENERATE_ROOM_MODELS, "Generate Android Room database models in addition to API models (JVM Volley library only)", false));
 
-        cliOptions.add(CliOption.newBoolean(SUPPORT_ANDROID_API_LEVEL_25_AND_BELLOW, "[WARNING] This flag will generate code that has a known security vulnerability. It uses `kotlin.io.createTempFile` instead of `java.nio.file.Files.createTempFile` in order to support Android API level 25 and bellow. For more info, please check the following links https://github.com/OpenAPITools/openapi-generator/security/advisories/GHSA-23x4-m842-fmwf, https://github.com/OpenAPITools/openapi-generator/pull/9284"));
+        cliOptions.add(CliOption.newBoolean(SUPPORT_ANDROID_API_LEVEL_25_AND_BELOW, "[WARNING] This flag will generate code that has a known security vulnerability. It uses `kotlin.io.createTempFile` instead of `java.nio.file.Files.createTempFile` in order to support Android API level 25 and below. For more info, please check the following links https://github.com/OpenAPITools/openapi-generator/security/advisories/GHSA-23x4-m842-fmwf, https://github.com/OpenAPITools/openapi-generator/pull/9284"));
 
         cliOptions.add(new CliOption(MAP_FILE_BINARY_TO_BYTE_ARRAY, "Map File and Binary to ByteArray (default: false)").defaultValue(Boolean.FALSE.toString()));
 
-        cliOptions.add(CliOption.newBoolean(GENERATE_ONEOF_ANYOF_WRAPPERS, "Generate oneOf, anyOf schemas as wrappers."));
+        cliOptions.add(CliOption.newBoolean(GENERATE_ONEOF_ANYOF_WRAPPERS, "Generate oneOf, anyOf schemas as wrappers. Only `jvm-retrofit2`(library), `gson`(serializationLibrary) support this option."));
 
         CliOption serializationLibraryOpt = new CliOption(CodegenConstants.SERIALIZATION_LIBRARY, SERIALIZATION_LIBRARY_DESC);
         cliOptions.add(serializationLibraryOpt.defaultValue(serializationLibrary.name()));
+
+        cliOptions.add(CliOption.newBoolean(USE_NON_ASCII_HEADERS, "Allow to use non-ascii headers with the okhttp library"));
+        cliOptions.add(CliOption.newBoolean(USE_RESPONSE_AS_RETURN_TYPE, "When using retrofit2 and coroutines, use `Response`<`T`> as return type instead of `T`.", true));
     }
 
     @Override
@@ -545,6 +565,10 @@ public class KotlinClientCodegen extends AbstractKotlinCodegen {
             }
             writer.write(content);
         });
+        // When a path is added to a Javadoc, if it ends with a `/*` is will cause a compiler error
+        // as the parser interrupts that as a start of a multiline comment.
+        // We replace paths like `/v1/foo/*` with `/v1/foo/<*>` to avoid this
+        additionalProperties.put("sanitizePathComment", new ReplaceAllLambda("\\/\\*", "/<*>"));
     }
 
     private void processDateLibrary() {
@@ -626,10 +650,20 @@ public class KotlinClientCodegen extends AbstractKotlinCodegen {
     private void processJVMRetrofit2Library(String infrastructureFolder) {
         additionalProperties.put(JVM, true);
         additionalProperties.put(JVM_RETROFIT2, true);
+        setUseResponseAsReturnType();
         supportingFiles.add(new SupportingFile("infrastructure/ApiClient.kt.mustache", infrastructureFolder, "ApiClient.kt"));
         supportingFiles.add(new SupportingFile("infrastructure/ResponseExt.kt.mustache", infrastructureFolder, "ResponseExt.kt"));
         supportingFiles.add(new SupportingFile("infrastructure/CollectionFormats.kt.mustache", infrastructureFolder, "CollectionFormats.kt"));
         addSupportingSerializerAdapters(infrastructureFolder);
+    }
+
+    private void setUseResponseAsReturnType() {
+        if (additionalProperties.containsKey(USE_RESPONSE_AS_RETURN_TYPE)) {
+            convertPropertyToBooleanAndWriteBack(USE_RESPONSE_AS_RETURN_TYPE);
+        } else {
+            // default is true for backward compatibility
+            additionalProperties.put(USE_RESPONSE_AS_RETURN_TYPE, true);
+        }
     }
 
     private void processJVMVolleyLibrary(String infrastructureFolder, String requestFolder, String authFolder) {
@@ -790,7 +824,7 @@ public class KotlinClientCodegen extends AbstractKotlinCodegen {
         supportingFiles.add(new SupportingFile("infrastructure/ApiResponse.kt.mustache", infrastructureFolder, "ApiResponse.kt"));
     }
 
-    private void proccessJvmSpring(final String infrastructureFolder) {
+    private void processJvmSpring(final String infrastructureFolder) {
         if (getSerializationLibrary() != SERIALIZATION_LIBRARY_TYPE.jackson) {
             throw new RuntimeException("This library currently only supports jackson serialization. Try adding '--additional-properties serializationLibrary=jackson' to your command.");
         }
@@ -803,7 +837,7 @@ public class KotlinClientCodegen extends AbstractKotlinCodegen {
     }
 
     private void processJvmSpringWebClientLibrary(final String infrastructureFolder) {
-        proccessJvmSpring(infrastructureFolder);
+        processJvmSpring(infrastructureFolder);
         additionalProperties.put(JVM_SPRING_WEBCLIENT, true);
     }
 
@@ -812,7 +846,7 @@ public class KotlinClientCodegen extends AbstractKotlinCodegen {
             throw new RuntimeException("This library must use Spring Boot 3. Try adding '--additional-properties useSpringBoot3=true' to your command.");
         }
 
-        proccessJvmSpring(infrastructureFolder);
+        processJvmSpring(infrastructureFolder);
         additionalProperties.put(JVM_SPRING_RESTCLIENT, true);
     }
 
@@ -962,7 +996,9 @@ public class KotlinClientCodegen extends AbstractKotlinCodegen {
                         ).trim();
                         return "multipart/form-data".equals(mediaType)
                                 || "application/x-www-form-urlencoded".equals(mediaType)
-                                || (mediaType.startsWith("application/") && (mediaType.endsWith("json") || mediaType.endsWith("octet-stream")));
+                                || (mediaType.startsWith("application/") && mediaType.endsWith("json"))
+                                || "application/octet-stream".equals(mediaType)
+                                || "text/plain".equals(mediaType);
                     };
                     operation.consumes = operation.consumes == null ? null : operation.consumes.stream()
                             .filter(isSerializable)
@@ -1018,7 +1054,11 @@ public class KotlinClientCodegen extends AbstractKotlinCodegen {
                 if ((JVM_KTOR.equals(getLibrary()) || MULTIPLATFORM.equals(getLibrary())) && operation.allParams != null) {
                     for (CodegenParameter param : operation.allParams) {
                         if (param.dataFormat != null && param.dataFormat.equals("binary")) {
-                            param.baseType = param.dataType = "io.ktor.client.request.forms.InputProvider";
+                            if (param.isContainer) {
+                                param.baseType = param.dataType = typeMapping.get(collectionType) + "<io.ktor.client.request.forms.FormPart<io.ktor.client.request.forms.InputProvider>>";
+                            } else {
+                                param.baseType = param.dataType = "io.ktor.client.request.forms.FormPart<io.ktor.client.request.forms.InputProvider>";
+                            }
                         }
                     }
                 }

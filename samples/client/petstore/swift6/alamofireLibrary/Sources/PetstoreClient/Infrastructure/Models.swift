@@ -10,8 +10,8 @@ import FoundationNetworking
 #endif
 import Alamofire
 
-protocol JSONEncodable {
-    func encodeToJSON(codableHelper: CodableHelper) -> Any
+protocol ParameterConvertible {
+    func asParameter(codableHelper: CodableHelper) -> any Sendable
 }
 
 /// An enum where the last case value can be used as a default catch-all.
@@ -90,7 +90,7 @@ public enum DecodableRequestBuilderError: Error {
     case generalError(Error)
 }
 
-open class Response<T> {
+public struct Response<T> {
     public let statusCode: Int
     public let header: [String: String]
     public let body: T
@@ -103,7 +103,7 @@ open class Response<T> {
         self.bodyData = bodyData
     }
 
-    public convenience init(response: HTTPURLResponse, body: T, bodyData: Data?) {
+    public init(response: HTTPURLResponse, body: T, bodyData: Data?) {
         let rawHeader = response.allHeaderFields
         var responseHeader = [String: String]()
         for (key, value) in rawHeader {
@@ -114,13 +114,14 @@ open class Response<T> {
         self.init(statusCode: response.statusCode, header: responseHeader, body: body, bodyData: bodyData)
     }
 }
+extension Response : Sendable where T : Sendable {}
 
 /// Type-erased ResponseSerializer
 ///
 /// This is needed in order to use `ResponseSerializer` as a Type in `Configuration`. Obsolete with `any` keyword in Swift >= 5.7
-public struct AnyResponseSerializer<T>: ResponseSerializer {
+public struct AnyResponseSerializer<T: Sendable>: ResponseSerializer {
     
-    let _serialize: (URLRequest?, HTTPURLResponse?, Data?, Error?) throws -> T
+    let _serialize: @Sendable (URLRequest?, HTTPURLResponse?, Data?, Error?) throws -> T
     
     public init<V: ResponseSerializer>(_ delegatee: V) where V.SerializedObject == T {
         _serialize = delegatee.serialize

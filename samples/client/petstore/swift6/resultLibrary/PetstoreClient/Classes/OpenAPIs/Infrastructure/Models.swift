@@ -9,8 +9,8 @@ import Foundation
 import FoundationNetworking
 #endif
 
-protocol JSONEncodable {
-    func encodeToJSON(codableHelper: CodableHelper) -> Any
+protocol ParameterConvertible {
+    func asParameter(codableHelper: CodableHelper) -> any Sendable
 }
 
 /// An enum where the last case value can be used as a default catch-all.
@@ -89,7 +89,7 @@ internal enum DecodableRequestBuilderError: Error {
     case generalError(Error)
 }
 
-internal class Response<T> {
+internal struct Response<T> {
     internal let statusCode: Int
     internal let header: [String: String]
     internal let body: T
@@ -102,7 +102,7 @@ internal class Response<T> {
         self.bodyData = bodyData
     }
 
-    internal convenience init(response: HTTPURLResponse, body: T, bodyData: Data?) {
+    internal init(response: HTTPURLResponse, body: T, bodyData: Data?) {
         let rawHeader = response.allHeaderFields
         var responseHeader = [String: String]()
         for (key, value) in rawHeader {
@@ -113,6 +113,7 @@ internal class Response<T> {
         self.init(statusCode: response.statusCode, header: responseHeader, body: body, bodyData: bodyData)
     }
 }
+extension Response : Sendable where T : Sendable {}
 
 internal final class RequestTask: @unchecked Sendable {
     private let lock = NSRecursiveLock()

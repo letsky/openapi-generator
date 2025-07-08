@@ -2,10 +2,11 @@
 /* eslint-disable */
 {{>licenseInfo}}
 
-import type { Configuration } from "./configuration";
-import type { RequestArgs } from "./base";
+
+import type { Configuration } from "./configuration{{importFileExtension}}";
+import type { RequestArgs } from "./base{{importFileExtension}}";
 import type { AxiosInstance, AxiosResponse } from '{{#withArkTSImports}}@ohos/{{/withArkTSImports}}axios';
-import { RequiredError } from "./base";
+import { RequiredError } from "./base{{importFileExtension}}";
 {{#withNodeImports}}
 import { URL, URLSearchParams } from 'url';
 {{/withNodeImports}}
@@ -84,13 +85,13 @@ function setFlattenedQueryParams(urlSearchParams: {{#withArkTSImports}}Url.{{/wi
     if (typeof parameter === "object") {
         if (Array.isArray(parameter)) {
             (parameter as any[]).forEach(item => setFlattenedQueryParams(urlSearchParams, item, key));
-        } 
+        }
         else {
-            Object.keys(parameter).forEach(currentKey => 
+            Object.keys(parameter).forEach(currentKey =>
                 setFlattenedQueryParams(urlSearchParams, parameter[currentKey], `${key}${key !== '' ? '.' : ''}${currentKey}`)
             );
         }
-    } 
+    }
     else {
         let parameterStr = parameter;
         {{#withArkTSImports}}

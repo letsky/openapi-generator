@@ -15,6 +15,7 @@ package org.openapitools.client.api;
 import org.openapitools.client.ApiClient;
 import org.openapitools.client.ApiException;
 import org.openapitools.client.ApiResponse;
+import org.openapitools.client.Configuration;
 import org.openapitools.client.Pair;
 
 import org.openapitools.client.model.DataQuery;
@@ -56,7 +57,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.11.0-SNAPSHOT")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.15.0-SNAPSHOT")
 public class QueryApi {
   private final HttpClient memberVarHttpClient;
   private final ObjectMapper memberVarObjectMapper;
@@ -67,7 +68,7 @@ public class QueryApi {
   private final Consumer<HttpResponse<String>> memberVarAsyncResponseInterceptor;
 
   public QueryApi() {
-    this(new ApiClient());
+    this(Configuration.getDefaultApiClient());
   }
 
   public QueryApi(ApiClient apiClient) {
@@ -94,6 +95,54 @@ public class QueryApi {
   }
 
   /**
+   * Download file from the given response.
+   *
+   * @param response Response
+   * @return File
+   * @throws ApiException If fail to read file content from response and write to disk
+   */
+  public File downloadFileFromResponse(HttpResponse<InputStream> response) throws ApiException {
+    try {
+      File file = prepareDownloadFile(response);
+      java.nio.file.Files.copy(response.body(), file.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+      return file;
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+  }
+
+  /**
+   * <p>Prepare the file for download from the response.</p>
+   *
+   * @param response a {@link java.net.http.HttpResponse} object.
+   * @return a {@link java.io.File} object.
+   * @throws java.io.IOException if any.
+   */
+  private File prepareDownloadFile(HttpResponse<InputStream> response) throws IOException {
+    String filename = null;
+    java.util.Optional<String> contentDisposition = response.headers().firstValue("Content-Disposition");
+    if (contentDisposition.isPresent() && !"".equals(contentDisposition.get())) {
+      // Get filename from the Content-Disposition header.
+      java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("filename=['\"]?([^'\"\\s]+)['\"]?");
+      java.util.regex.Matcher matcher = pattern.matcher(contentDisposition.get());
+      if (matcher.find())
+        filename = matcher.group(1);
+    }
+    File file = null;
+    if (filename != null) {
+      java.nio.file.Path tempDir = java.nio.file.Files.createTempDirectory("swagger-gen-native");
+      java.nio.file.Path filePath = java.nio.file.Files.createFile(tempDir.resolve(filename));
+      file = filePath.toFile();
+      tempDir.toFile().deleteOnExit();   // best effort cleanup
+      file.deleteOnExit(); // best effort cleanup
+    } else {
+      file = java.nio.file.Files.createTempFile("download-", "").toFile();
+      file.deleteOnExit(); // best effort cleanup
+    }
+    return file;
+  }
+
+  /**
    * Test query parameter(s)
    * Test query parameter(s)
    * @param enumNonrefStringQuery  (optional)
@@ -101,7 +150,7 @@ public class QueryApi {
    * @return String
    * @throws ApiException if fails to make API call
    */
-  public String testEnumRefString(String enumNonrefStringQuery, StringEnumRef enumRefStringQuery) throws ApiException {
+  public String testEnumRefString(@javax.annotation.Nullable String enumNonrefStringQuery, @javax.annotation.Nullable StringEnumRef enumRefStringQuery) throws ApiException {
     ApiResponse<String> localVarResponse = testEnumRefStringWithHttpInfo(enumNonrefStringQuery, enumRefStringQuery);
     return localVarResponse.getData();
   }
@@ -114,7 +163,7 @@ public class QueryApi {
    * @return ApiResponse&lt;String&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<String> testEnumRefStringWithHttpInfo(String enumNonrefStringQuery, StringEnumRef enumRefStringQuery) throws ApiException {
+  public ApiResponse<String> testEnumRefStringWithHttpInfo(@javax.annotation.Nullable String enumNonrefStringQuery, @javax.annotation.Nullable StringEnumRef enumRefStringQuery) throws ApiException {
     HttpRequest.Builder localVarRequestBuilder = testEnumRefStringRequestBuilder(enumNonrefStringQuery, enumRefStringQuery);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
@@ -151,7 +200,7 @@ public class QueryApi {
     }
   }
 
-  private HttpRequest.Builder testEnumRefStringRequestBuilder(String enumNonrefStringQuery, StringEnumRef enumRefStringQuery) throws ApiException {
+  private HttpRequest.Builder testEnumRefStringRequestBuilder(@javax.annotation.Nullable String enumNonrefStringQuery, @javax.annotation.Nullable StringEnumRef enumRefStringQuery) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -197,7 +246,7 @@ public class QueryApi {
    * @return String
    * @throws ApiException if fails to make API call
    */
-  public String testQueryDatetimeDateString(Instant datetimeQuery, LocalDate dateQuery, String stringQuery) throws ApiException {
+  public String testQueryDatetimeDateString(@javax.annotation.Nullable Instant datetimeQuery, @javax.annotation.Nullable LocalDate dateQuery, @javax.annotation.Nullable String stringQuery) throws ApiException {
     ApiResponse<String> localVarResponse = testQueryDatetimeDateStringWithHttpInfo(datetimeQuery, dateQuery, stringQuery);
     return localVarResponse.getData();
   }
@@ -211,7 +260,7 @@ public class QueryApi {
    * @return ApiResponse&lt;String&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<String> testQueryDatetimeDateStringWithHttpInfo(Instant datetimeQuery, LocalDate dateQuery, String stringQuery) throws ApiException {
+  public ApiResponse<String> testQueryDatetimeDateStringWithHttpInfo(@javax.annotation.Nullable Instant datetimeQuery, @javax.annotation.Nullable LocalDate dateQuery, @javax.annotation.Nullable String stringQuery) throws ApiException {
     HttpRequest.Builder localVarRequestBuilder = testQueryDatetimeDateStringRequestBuilder(datetimeQuery, dateQuery, stringQuery);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
@@ -248,7 +297,7 @@ public class QueryApi {
     }
   }
 
-  private HttpRequest.Builder testQueryDatetimeDateStringRequestBuilder(Instant datetimeQuery, LocalDate dateQuery, String stringQuery) throws ApiException {
+  private HttpRequest.Builder testQueryDatetimeDateStringRequestBuilder(@javax.annotation.Nullable Instant datetimeQuery, @javax.annotation.Nullable LocalDate dateQuery, @javax.annotation.Nullable String stringQuery) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -296,7 +345,7 @@ public class QueryApi {
    * @return String
    * @throws ApiException if fails to make API call
    */
-  public String testQueryIntegerBooleanString(Integer integerQuery, Boolean booleanQuery, String stringQuery) throws ApiException {
+  public String testQueryIntegerBooleanString(@javax.annotation.Nullable Integer integerQuery, @javax.annotation.Nullable Boolean booleanQuery, @javax.annotation.Nullable String stringQuery) throws ApiException {
     ApiResponse<String> localVarResponse = testQueryIntegerBooleanStringWithHttpInfo(integerQuery, booleanQuery, stringQuery);
     return localVarResponse.getData();
   }
@@ -310,7 +359,7 @@ public class QueryApi {
    * @return ApiResponse&lt;String&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<String> testQueryIntegerBooleanStringWithHttpInfo(Integer integerQuery, Boolean booleanQuery, String stringQuery) throws ApiException {
+  public ApiResponse<String> testQueryIntegerBooleanStringWithHttpInfo(@javax.annotation.Nullable Integer integerQuery, @javax.annotation.Nullable Boolean booleanQuery, @javax.annotation.Nullable String stringQuery) throws ApiException {
     HttpRequest.Builder localVarRequestBuilder = testQueryIntegerBooleanStringRequestBuilder(integerQuery, booleanQuery, stringQuery);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
@@ -347,7 +396,7 @@ public class QueryApi {
     }
   }
 
-  private HttpRequest.Builder testQueryIntegerBooleanStringRequestBuilder(Integer integerQuery, Boolean booleanQuery, String stringQuery) throws ApiException {
+  private HttpRequest.Builder testQueryIntegerBooleanStringRequestBuilder(@javax.annotation.Nullable Integer integerQuery, @javax.annotation.Nullable Boolean booleanQuery, @javax.annotation.Nullable String stringQuery) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -393,7 +442,7 @@ public class QueryApi {
    * @return String
    * @throws ApiException if fails to make API call
    */
-  public String testQueryStyleDeepObjectExplodeTrueObject(Pet queryObject) throws ApiException {
+  public String testQueryStyleDeepObjectExplodeTrueObject(@javax.annotation.Nullable Pet queryObject) throws ApiException {
     ApiResponse<String> localVarResponse = testQueryStyleDeepObjectExplodeTrueObjectWithHttpInfo(queryObject);
     return localVarResponse.getData();
   }
@@ -405,7 +454,7 @@ public class QueryApi {
    * @return ApiResponse&lt;String&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<String> testQueryStyleDeepObjectExplodeTrueObjectWithHttpInfo(Pet queryObject) throws ApiException {
+  public ApiResponse<String> testQueryStyleDeepObjectExplodeTrueObjectWithHttpInfo(@javax.annotation.Nullable Pet queryObject) throws ApiException {
     HttpRequest.Builder localVarRequestBuilder = testQueryStyleDeepObjectExplodeTrueObjectRequestBuilder(queryObject);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
@@ -442,7 +491,7 @@ public class QueryApi {
     }
   }
 
-  private HttpRequest.Builder testQueryStyleDeepObjectExplodeTrueObjectRequestBuilder(Pet queryObject) throws ApiException {
+  private HttpRequest.Builder testQueryStyleDeepObjectExplodeTrueObjectRequestBuilder(@javax.annotation.Nullable Pet queryObject) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -489,7 +538,7 @@ public class QueryApi {
    * @return String
    * @throws ApiException if fails to make API call
    */
-  public String testQueryStyleDeepObjectExplodeTrueObjectAllOf(TestQueryStyleDeepObjectExplodeTrueObjectAllOfQueryObjectParameter queryObject) throws ApiException {
+  public String testQueryStyleDeepObjectExplodeTrueObjectAllOf(@javax.annotation.Nullable TestQueryStyleDeepObjectExplodeTrueObjectAllOfQueryObjectParameter queryObject) throws ApiException {
     ApiResponse<String> localVarResponse = testQueryStyleDeepObjectExplodeTrueObjectAllOfWithHttpInfo(queryObject);
     return localVarResponse.getData();
   }
@@ -501,7 +550,7 @@ public class QueryApi {
    * @return ApiResponse&lt;String&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<String> testQueryStyleDeepObjectExplodeTrueObjectAllOfWithHttpInfo(TestQueryStyleDeepObjectExplodeTrueObjectAllOfQueryObjectParameter queryObject) throws ApiException {
+  public ApiResponse<String> testQueryStyleDeepObjectExplodeTrueObjectAllOfWithHttpInfo(@javax.annotation.Nullable TestQueryStyleDeepObjectExplodeTrueObjectAllOfQueryObjectParameter queryObject) throws ApiException {
     HttpRequest.Builder localVarRequestBuilder = testQueryStyleDeepObjectExplodeTrueObjectAllOfRequestBuilder(queryObject);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
@@ -538,7 +587,7 @@ public class QueryApi {
     }
   }
 
-  private HttpRequest.Builder testQueryStyleDeepObjectExplodeTrueObjectAllOfRequestBuilder(TestQueryStyleDeepObjectExplodeTrueObjectAllOfQueryObjectParameter queryObject) throws ApiException {
+  private HttpRequest.Builder testQueryStyleDeepObjectExplodeTrueObjectAllOfRequestBuilder(@javax.annotation.Nullable TestQueryStyleDeepObjectExplodeTrueObjectAllOfQueryObjectParameter queryObject) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -585,7 +634,7 @@ public class QueryApi {
    * @return String
    * @throws ApiException if fails to make API call
    */
-  public String testQueryStyleFormExplodeFalseArrayInteger(List<Integer> queryObject) throws ApiException {
+  public String testQueryStyleFormExplodeFalseArrayInteger(@javax.annotation.Nullable List<Integer> queryObject) throws ApiException {
     ApiResponse<String> localVarResponse = testQueryStyleFormExplodeFalseArrayIntegerWithHttpInfo(queryObject);
     return localVarResponse.getData();
   }
@@ -597,7 +646,7 @@ public class QueryApi {
    * @return ApiResponse&lt;String&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<String> testQueryStyleFormExplodeFalseArrayIntegerWithHttpInfo(List<Integer> queryObject) throws ApiException {
+  public ApiResponse<String> testQueryStyleFormExplodeFalseArrayIntegerWithHttpInfo(@javax.annotation.Nullable List<Integer> queryObject) throws ApiException {
     HttpRequest.Builder localVarRequestBuilder = testQueryStyleFormExplodeFalseArrayIntegerRequestBuilder(queryObject);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
@@ -634,7 +683,7 @@ public class QueryApi {
     }
   }
 
-  private HttpRequest.Builder testQueryStyleFormExplodeFalseArrayIntegerRequestBuilder(List<Integer> queryObject) throws ApiException {
+  private HttpRequest.Builder testQueryStyleFormExplodeFalseArrayIntegerRequestBuilder(@javax.annotation.Nullable List<Integer> queryObject) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -676,7 +725,7 @@ public class QueryApi {
    * @return String
    * @throws ApiException if fails to make API call
    */
-  public String testQueryStyleFormExplodeFalseArrayString(List<String> queryObject) throws ApiException {
+  public String testQueryStyleFormExplodeFalseArrayString(@javax.annotation.Nullable List<String> queryObject) throws ApiException {
     ApiResponse<String> localVarResponse = testQueryStyleFormExplodeFalseArrayStringWithHttpInfo(queryObject);
     return localVarResponse.getData();
   }
@@ -688,7 +737,7 @@ public class QueryApi {
    * @return ApiResponse&lt;String&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<String> testQueryStyleFormExplodeFalseArrayStringWithHttpInfo(List<String> queryObject) throws ApiException {
+  public ApiResponse<String> testQueryStyleFormExplodeFalseArrayStringWithHttpInfo(@javax.annotation.Nullable List<String> queryObject) throws ApiException {
     HttpRequest.Builder localVarRequestBuilder = testQueryStyleFormExplodeFalseArrayStringRequestBuilder(queryObject);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
@@ -725,7 +774,7 @@ public class QueryApi {
     }
   }
 
-  private HttpRequest.Builder testQueryStyleFormExplodeFalseArrayStringRequestBuilder(List<String> queryObject) throws ApiException {
+  private HttpRequest.Builder testQueryStyleFormExplodeFalseArrayStringRequestBuilder(@javax.annotation.Nullable List<String> queryObject) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -767,7 +816,7 @@ public class QueryApi {
    * @return String
    * @throws ApiException if fails to make API call
    */
-  public String testQueryStyleFormExplodeTrueArrayString(TestQueryStyleFormExplodeTrueArrayStringQueryObjectParameter queryObject) throws ApiException {
+  public String testQueryStyleFormExplodeTrueArrayString(@javax.annotation.Nullable TestQueryStyleFormExplodeTrueArrayStringQueryObjectParameter queryObject) throws ApiException {
     ApiResponse<String> localVarResponse = testQueryStyleFormExplodeTrueArrayStringWithHttpInfo(queryObject);
     return localVarResponse.getData();
   }
@@ -779,7 +828,7 @@ public class QueryApi {
    * @return ApiResponse&lt;String&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<String> testQueryStyleFormExplodeTrueArrayStringWithHttpInfo(TestQueryStyleFormExplodeTrueArrayStringQueryObjectParameter queryObject) throws ApiException {
+  public ApiResponse<String> testQueryStyleFormExplodeTrueArrayStringWithHttpInfo(@javax.annotation.Nullable TestQueryStyleFormExplodeTrueArrayStringQueryObjectParameter queryObject) throws ApiException {
     HttpRequest.Builder localVarRequestBuilder = testQueryStyleFormExplodeTrueArrayStringRequestBuilder(queryObject);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
@@ -816,7 +865,7 @@ public class QueryApi {
     }
   }
 
-  private HttpRequest.Builder testQueryStyleFormExplodeTrueArrayStringRequestBuilder(TestQueryStyleFormExplodeTrueArrayStringQueryObjectParameter queryObject) throws ApiException {
+  private HttpRequest.Builder testQueryStyleFormExplodeTrueArrayStringRequestBuilder(@javax.annotation.Nullable TestQueryStyleFormExplodeTrueArrayStringQueryObjectParameter queryObject) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -858,7 +907,7 @@ public class QueryApi {
    * @return String
    * @throws ApiException if fails to make API call
    */
-  public String testQueryStyleFormExplodeTrueObject(Pet queryObject) throws ApiException {
+  public String testQueryStyleFormExplodeTrueObject(@javax.annotation.Nullable Pet queryObject) throws ApiException {
     ApiResponse<String> localVarResponse = testQueryStyleFormExplodeTrueObjectWithHttpInfo(queryObject);
     return localVarResponse.getData();
   }
@@ -870,7 +919,7 @@ public class QueryApi {
    * @return ApiResponse&lt;String&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<String> testQueryStyleFormExplodeTrueObjectWithHttpInfo(Pet queryObject) throws ApiException {
+  public ApiResponse<String> testQueryStyleFormExplodeTrueObjectWithHttpInfo(@javax.annotation.Nullable Pet queryObject) throws ApiException {
     HttpRequest.Builder localVarRequestBuilder = testQueryStyleFormExplodeTrueObjectRequestBuilder(queryObject);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
@@ -907,7 +956,7 @@ public class QueryApi {
     }
   }
 
-  private HttpRequest.Builder testQueryStyleFormExplodeTrueObjectRequestBuilder(Pet queryObject) throws ApiException {
+  private HttpRequest.Builder testQueryStyleFormExplodeTrueObjectRequestBuilder(@javax.annotation.Nullable Pet queryObject) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -954,7 +1003,7 @@ public class QueryApi {
    * @return String
    * @throws ApiException if fails to make API call
    */
-  public String testQueryStyleFormExplodeTrueObjectAllOf(DataQuery queryObject) throws ApiException {
+  public String testQueryStyleFormExplodeTrueObjectAllOf(@javax.annotation.Nullable DataQuery queryObject) throws ApiException {
     ApiResponse<String> localVarResponse = testQueryStyleFormExplodeTrueObjectAllOfWithHttpInfo(queryObject);
     return localVarResponse.getData();
   }
@@ -966,7 +1015,7 @@ public class QueryApi {
    * @return ApiResponse&lt;String&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<String> testQueryStyleFormExplodeTrueObjectAllOfWithHttpInfo(DataQuery queryObject) throws ApiException {
+  public ApiResponse<String> testQueryStyleFormExplodeTrueObjectAllOfWithHttpInfo(@javax.annotation.Nullable DataQuery queryObject) throws ApiException {
     HttpRequest.Builder localVarRequestBuilder = testQueryStyleFormExplodeTrueObjectAllOfRequestBuilder(queryObject);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
@@ -1003,7 +1052,7 @@ public class QueryApi {
     }
   }
 
-  private HttpRequest.Builder testQueryStyleFormExplodeTrueObjectAllOfRequestBuilder(DataQuery queryObject) throws ApiException {
+  private HttpRequest.Builder testQueryStyleFormExplodeTrueObjectAllOfRequestBuilder(@javax.annotation.Nullable DataQuery queryObject) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
